@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histograma</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    canvas {
+      max-width: 600px;
+      max-height: 500px;
+      margin: 20px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="histogramChart"></canvas>
+
+  <script>
+    var ctx = document.getElementById('histogramChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['0-200', '201-400', '401-600', '601-800', '801-1000'],
+        datasets: [{
+          label: 'Frecuencia de Ingresos',
+          data: [3, 2, 1, 2, 2], // Personaliza estos datos según tus rangos
+          backgroundColor: 'rgba(75, 192, 192, 0.8)',
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            stepSize: 1
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

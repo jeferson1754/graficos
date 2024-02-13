@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Dispersión</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        canvas {
+            max-width: 600px;
+            margin: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="scatterChart"></canvas>
+
+    <script>
+        var ctx = document.getElementById('scatterChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Ingresos Diarios',
+                    data: [
+                        { x: 'Día 1', y: 500 },
+                        { x: 'Día 2', y: 800 },
+                        { x: 'Día 3', y: 600 },
+                        { x: 'Día 4', y: 900 },
+                        { x: 'Día 5', y: 700 },
+                    ],
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'category',
+                        labels: ['Día 1', 'Día 2', 'Día 3', 'Día 4', 'Día 5'],
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
