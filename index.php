@@ -137,8 +137,11 @@ if ($resultado) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="style.css?<?php echo time(); ?>">
+    <link rel="stylesheet" type="text/css" href="./css/style.css?<?php echo time(); ?>">
+    <link rel="stylesheet" href="./css/checkbox.css?<?php echo time(); ?>">
     <title>Graficos</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"><!--Iconos-->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script><!--Graficos de Area-->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script><!--Graficos de Pie-->
 </head>
@@ -156,6 +159,7 @@ if ($resultado) {
     if ($result->num_rows > 0) {
         // Obtener los datos
         $row = $result->fetch_assoc();
+        $idRegistros=$row['ID'];
 
         $sql1 = "SELECT * FROM `op` WHERE ID='$row[ID]'";
         $result1 = $conexion->query($sql1);
@@ -200,9 +204,28 @@ if ($resultado) {
             echo "</a>";
         }
 
-
-
         echo "</h1>";
+        if ($fila["ID_Anime"] == $row["ID_Anime"] && $fila["Link"] == $row["Link"]) {
+    ?>
+            <div class="todo">
+                <label class="contenedor">
+                    <input type="checkbox" id="redireccionarCheckbox" name="op" unchecked>
+                    <span class="text">El link esta mal?</span>
+                    <div class="checkmark"></div>
+                </label>
+            </div>
+        <?php
+        } else {
+        ?>
+            <div class="todo">
+                <label class="contenedor">
+                    <input type="checkbox" id="redireccionarCheckbox2" name="ed" unchecked>
+                    <span class="text">El link esta mal?</span>
+                    <div class="checkmark"></div>
+                </label>
+            </div>
+    <?php
+        }
     } else {
         echo "No se encontraron resultados";
     }
@@ -216,10 +239,24 @@ if ($resultado) {
             <?php
             if ($row["Link_Iframe"] == "") {
                 echo "<img src='' alt='Sin video'>";
+            ?>
+                <div class="tooltip-container">
+                    <!-- Icono de información -->
+                    <i class="fas fa-info-circle"></i>
+                    <!-- Texto informativo -->
+                    <span class="tooltip-text">
+                        <!-- Cuadro de color rojo -->
+                        <div class="color-box red"></div>: Sin link<br>
+                        <!-- Cuadro de color azul -->
+                        <div class="color-box purple"></div>: Estado Link no es Correcto
+                </div>
+            <?php
             } else {
                 echo "<iframe src='" . $row["Link_Iframe"] . "' frameborder='0' allow='clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share' allowfullscreen></iframe>";
             }
             ?>
+
+
         </div>
     </div>
 
@@ -441,6 +478,38 @@ if ($resultado) {
         var option1 = <?php echo $jsonOption1; ?>;
 
         myChart3.setOption(option1);
+
+        //Redirección con Checkbox
+
+        // Primera función
+        document.addEventListener('DOMContentLoaded', function() {
+            // Obtener el checkbox
+            var checkbox = document.getElementById('redireccionarCheckbox');
+
+            // Agregar un listener para el evento de cambio
+            checkbox.addEventListener('change', function() {
+                // Verificar si el checkbox está marcado
+                if (this.checked) {
+                    // Redireccionar a otra página
+                    window.location.href = 'update_checkbox_op.php?variable=<?php echo urlencode($idRegistros); ?>'; // Cambia esta URL por la que desees
+                }
+            });
+        });
+
+        // Segunda función (con nombre diferente)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Obtener el checkbox
+            var checkbox = document.getElementById('redireccionarCheckbox2');
+
+            // Agregar un listener para el evento de cambio
+            checkbox.addEventListener('change', function() {
+                // Verificar si el checkbox está marcado
+                if (this.checked) {
+                    // Redireccionar a otra página
+                    window.location.href = 'update_checkbox_ed.php?variable=<?php echo urlencode($idRegistros); ?>';
+                }
+            });
+        });
     </script>
 </body>
 
