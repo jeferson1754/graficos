@@ -73,3 +73,9 @@
 
     color: var(--main-color);
 }
+
+@media screen and (max-width: 768px) {
+    .todo {
+        display: none;
+    }
+}

@@ -26,20 +26,17 @@ $totalResult = $opResult + $edResult;
 
 //-----------GRAFICO CIRCULAR GRANDE---------------
 
-$consulta1 = "SELECT autor.Autor, COUNT(op.ID) AS CantidadRepeticiones
-              FROM autor
-              JOIN op ON autor.ID = op.ID_Autor
-              WHERE autor.ID != 1
-              GROUP BY autor.ID, autor.Autor
-              ORDER BY CantidadRepeticiones DESC
-              LIMIT 10";
+$consulta1 = "SELECT autor.Autor, autor.Canciones AS CantidadRepeticiones 
+FROM autor WHERE autor.ID != 1 
+GROUP BY autor.ID, autor.Autor 
+ORDER BY CantidadRepeticiones DESC LIMIT 15";
 
 $resultado1 = $conexion->query($consulta1);
 
 $resultados1 = ($resultado1) ? $resultado1->fetch_all(MYSQLI_ASSOC) : array();
 
 // Variables individuales para los 10 primeros resultados
-for ($i = 1; $i <= 10; $i++) {
+for ($i = 1; $i <= 15; $i++) {
     ${"autor" . $i} = isset($resultados1[$i - 1]) ? $resultados1[$i - 1]['Autor'] : '';
     ${"repeticiones" . $i} = isset($resultados1[$i - 1]) ? $resultados1[$i - 1]['CantidadRepeticiones'] : 0;
 }
@@ -159,7 +156,7 @@ if ($resultado) {
     if ($result->num_rows > 0) {
         // Obtener los datos
         $row = $result->fetch_assoc();
-        $idRegistros=$row['ID'];
+        $idRegistros = $row['ID'];
 
         $sql1 = "SELECT * FROM `op` WHERE ID='$row[ID]'";
         $result1 = $conexion->query($sql1);
@@ -411,7 +408,12 @@ if ($resultado) {
                         array('value' => $repeticiones7, 'name' => $autor7),
                         array('value' => $repeticiones8, 'name' => $autor8),
                         array('value' => $repeticiones9, 'name' => $autor9),
-                        array('value' => $repeticiones10, 'name' => $autor10)
+                        array('value' => $repeticiones10, 'name' => $autor10),
+                        array('value' => $repeticiones11, 'name' => $autor11),
+                        array('value' => $repeticiones12, 'name' => $autor12),
+                        array('value' => $repeticiones13, 'name' => $autor13),
+                        array('value' => $repeticiones14, 'name' => $autor14),
+                        array('value' => $repeticiones15, 'name' => $autor15)
                     );
 
                     foreach ($dataArray as $item) {
