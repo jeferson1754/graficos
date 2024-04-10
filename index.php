@@ -51,11 +51,7 @@ if ($resultado1) {
 // Función para ejecutar consulta y construir el array de datos
 function fetchData($conexion, $tabla)
 {
-    $sql = "SELECT YEARWEEK(Fecha_Ingreso) AS Semana, COUNT(*) AS RecuentoSemana
-            FROM $tabla
-            WHERE YEARWEEK(Fecha_Ingreso) BETWEEN YEARWEEK(CURDATE() - INTERVAL 4 WEEK) AND YEARWEEK(CURDATE())
-            GROUP BY Semana
-            ORDER BY Semana";
+    $sql = "SELECT CONCAT(YEAR(Fecha_Ingreso), '-', WEEK(Fecha_Ingreso)+1,' Semana') AS Semana, COUNT(*) AS RecuentoSemana FROM $tabla WHERE YEARWEEK(Fecha_Ingreso) BETWEEN YEARWEEK(CURDATE() - INTERVAL 4 WEEK) AND YEARWEEK(CURDATE()) GROUP BY Semana ORDER BY Semana";
 
     // Ejecutar la consulta
     $resultado = $conexion->query($sql);
@@ -65,7 +61,10 @@ function fetchData($conexion, $tabla)
 
     // Procesar los resultados y construir el array
     while ($row = $resultado->fetch_assoc()) {
-        $data[] = $row["RecuentoSemana"];
+        $data[] = array(
+            "Semana" => $row["Semana"],
+            "RecuentoSemana" => $row["RecuentoSemana"]
+        );
     }
 
     // Liberar memoria del resultado
@@ -73,10 +72,13 @@ function fetchData($conexion, $tabla)
 
     return $data;
 }
+
+
 // Obtener datos para OP
 $dataOp = fetchData($conexion, "op");
 // Obtener datos para ED
 $dataEd = fetchData($conexion, "ed");
+
 
 //-----------GRAFICO DE CASILLAS FALTANTES ---------------
 
@@ -342,16 +344,28 @@ if ($resultado) {
         var myChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+                labels: [<?php
+                            foreach ($dataOp as $item) {
+                                echo "'" . $item['Semana'] . "', ";
+                            }
+                            ?>],
                 datasets: [{
                     label: 'Cant. de Openings',
-                    data: [<?php echo implode(", ", $dataOp); ?>],
+                    data: [<?php
+                            foreach ($dataOp as $item) {
+                                echo $item['RecuentoSemana'] . ", ";
+                            }
+                            ?>],
                     borderColor: 'rgba(75, 192, 192, 1)',
                     borderWidth: 1,
                     fill: true,
                 }, {
                     label: 'Cant. de Endings',
-                    data: [<?php echo implode(", ", $dataEd); ?>],
+                    data: [<?php
+                            foreach ($dataEd as $item) {
+                                echo $item['RecuentoSemana'] . ", ";
+                            }
+                            ?>],
                     borderColor: 'rgba(255, 99, 132, 1)',
                     borderWidth: 1,
                     fill: true,
@@ -366,6 +380,7 @@ if ($resultado) {
                 }
             }
         });
+
 
 
 
