@@ -2,6 +2,28 @@
 
 require '../bd.php';
 
+// Verificar si no hay registros con Repeticion = 0 en 'op'
+$sql = "SELECT COUNT(*) AS Count FROM op WHERE Repeticion = 0";
+$result = mysqli_query($conexion, $sql);
+$row = mysqli_fetch_assoc($result);
+
+if ($row['Count'] == 0) {
+    // Reiniciar repetición en 'op'
+    $updateSql = "UPDATE op SET Repeticion = 0 WHERE Repeticion = 1";
+    mysqli_query($conexion, $updateSql);
+}
+
+// Verificar si no hay registros con Repeticion = 0 en 'ed'
+$sql = "SELECT COUNT(*) AS Count FROM ed WHERE Repeticion = 0";
+$result = mysqli_query($conexion, $sql);
+$row = mysqli_fetch_assoc($result);
+
+if ($row['Count'] == 0) {
+    // Reiniciar repetición en 'ed'
+    $updateSql = "UPDATE ed SET Repeticion = 0 WHERE Repeticion = 1";
+    mysqli_query($conexion, $updateSql);
+}
+
 //-----------GRAFICO CIRCULAR---------------
 $consulta = "SELECT 'op' AS Tipo, COUNT(*) AS Recuento FROM op
              UNION ALL
@@ -79,6 +101,39 @@ $dataOp = fetchData($conexion, "op");
 // Obtener datos para ED
 $dataEd = fetchData($conexion, "ed");
 
+$dataOpLength = count($dataOp); // Longitud de $dataOp
+$dataEdLength = count($dataEd); // Longitud de $dataEd
+
+// Rellenar la lista más corta con ceros para igualar la longitud
+if ($dataOpLength > $dataEdLength) {
+    // Rellenar $dataEd para que tenga el mismo tamaño que $dataOp
+    for ($i = $dataEdLength; $i < $dataOpLength; $i++) {
+        $dataEd[] = ['RecuentoSemana' => 0]; // Agregar cero para igualar
+    }
+} elseif ($dataOpLength < $dataEdLength) {
+    // Rellenar $dataOp para que tenga el mismo tamaño que $dataEd
+    for ($i = $dataOpLength; $i < $dataEdLength; $i++) {
+        $dataOp[] = ['RecuentoSemana' => 0]; // Agregar cero para igualar
+    }
+}
+
+// Ahora las dos listas tienen el mismo tamaño
+$dataOpArray = [];
+$dataEdArray = [];
+
+foreach ($dataOp as $item) {
+    $dataOpArray[] = $item['RecuentoSemana'];
+    $dataOpArray[] = $item['Semana'];
+}
+
+foreach ($dataEd as $item) {
+    $dataEdArray[] = $item['RecuentoSemana'];
+    //$dataEdArray[] = $item['Semana'];
+}
+/*
+echo "DataOp: [" . implode(', ', $dataOpArray) . "]<br>";
+echo "DataEd: [" . implode(', ', $dataEdArray) . "]<br>";
+*/
 
 //-----------GRAFICO DE CASILLAS FALTANTES ---------------
 
@@ -149,8 +204,14 @@ if ($resultado) {
     <?php
 
     // Consulta SQL
-    $sql = "(SELECT * FROM op ORDER BY RAND() LIMIT 1) UNION ALL (SELECT * FROM ed ORDER BY RAND() LIMIT 1) ORDER BY RAND() LIMIT 1";
+    $sql = "(SELECT * FROM op WHERE Repeticion = 0 ORDER BY RAND() LIMIT 5)
+    UNION ALL
+    (SELECT * FROM ed WHERE Repeticion = 0 ORDER BY RAND() LIMIT 5)
+    ORDER BY RAND()
+    LIMIT 1;
+    ";
 
+    //echo $sql;
     // Ejecutar la consulta
     $result = $conexion->query($sql);
 
@@ -205,6 +266,8 @@ if ($resultado) {
 
         echo "</h1>";
         if ($fila["ID_Anime"] == $row["ID_Anime"] && $fila["Link"] == $row["Link"]) {
+            $sql4 = "UPDATE op SET Repeticion=1 WHERE ID='$idRegistros';";
+            $result4 = mysqli_query($conexion, $sql4);
     ?>
             <div class="todo">
                 <label class="contenedor">
@@ -215,6 +278,8 @@ if ($resultado) {
             </div>
         <?php
         } else {
+            $sql4 = "UPDATE ed SET Repeticion=1 WHERE ID='$idRegistros';";
+            $result4 = mysqli_query($conexion, $sql4);
         ?>
             <div class="todo">
                 <label class="contenedor">
