@@ -101,22 +101,6 @@ $dataOp = fetchData($conexion, "op");
 // Obtener datos para ED
 $dataEd = fetchData($conexion, "ed");
 
-$dataOpLength = count($dataOp); // Longitud de $dataOp
-$dataEdLength = count($dataEd); // Longitud de $dataEd
-
-// Rellenar la lista más corta con ceros para igualar la longitud
-if ($dataOpLength > $dataEdLength) {
-    // Rellenar $dataEd para que tenga el mismo tamaño que $dataOp
-    for ($i = $dataEdLength; $i < $dataOpLength; $i++) {
-        $dataEd[] = ['RecuentoSemana' => 0]; // Agregar cero para igualar
-    }
-} elseif ($dataOpLength < $dataEdLength) {
-    // Rellenar $dataOp para que tenga el mismo tamaño que $dataEd
-    for ($i = $dataOpLength; $i < $dataEdLength; $i++) {
-        $dataOp[] = ['RecuentoSemana' => 0]; // Agregar cero para igualar
-    }
-}
-
 // Ahora las dos listas tienen el mismo tamaño
 $dataOpArray = [];
 $dataEdArray = [];
@@ -128,12 +112,54 @@ foreach ($dataOp as $item) {
 
 foreach ($dataEd as $item) {
     $dataEdArray[] = $item['RecuentoSemana'];
-    //$dataEdArray[] = $item['Semana'];
+    $dataEdArray[] = $item['Semana'];
 }
 /*
 echo "DataOp: [" . implode(', ', $dataOpArray) . "]<br>";
 echo "DataEd: [" . implode(', ', $dataEdArray) . "]<br>";
 */
+
+
+
+
+// Crear un mapa para dataEd con clave como la fecha y valor como el número antes de la fecha
+$edMap = array();
+for ($i = 0; $i < count($dataEdArray); $i += 2) {
+    $edMap[$dataEdArray[$i + 1]] = $dataEdArray[$i];
+}
+
+// Inicializar el nuevo array para los resultados
+$newDataEd = array();
+
+// Recorrer dataOp, tomando las fechas y agregando el valor correspondiente de dataEd
+for ($i = 1; $i < count($dataOpArray); $i += 2) {
+    $semana = $dataOpArray[$i]; // Obtener la fecha (semana)
+
+    if (array_key_exists($semana, $edMap)) {
+        // Si la fecha está en el mapa de dataEd, obtener su valor
+        $correspondingValue = $edMap[$semana];
+    } else {
+        // Si no está, el valor es cero
+        $correspondingValue = 0;
+    }
+
+    // Agregar el valor correspondiente y la fecha al nuevo array
+    $newDataEd[] = $correspondingValue;
+    $newDataEd[] = $semana;
+}
+
+// Imprimir el resultado final
+//echo "DataEd: [" . implode(", ", $newDataEd) . "]\n";
+
+// Extraer solo los valores numéricos
+$numValues = array_filter($newDataEd, 'is_numeric');
+
+// Re-indexar el arreglo para que tenga índices consecutivos
+$numValues = array_values($numValues);
+
+//echo "Valores numéricos: [" . implode(", ", $numValues) . "]";
+
+
 
 //-----------GRAFICO DE CASILLAS FALTANTES ---------------
 
@@ -426,11 +452,9 @@ if ($resultado) {
                     fill: true,
                 }, {
                     label: 'Cant. de Endings',
-                    data: [<?php
-                            foreach ($dataEd as $item) {
-                                echo $item['RecuentoSemana'] . ", ";
-                            }
-                            ?>],
+                    data: <?php
+                            echo "[" . implode(", ", $numValues) . "]";
+                            ?>,
                     borderColor: 'rgba(255, 99, 132, 1)',
                     borderWidth: 1,
                     fill: true,
