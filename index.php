@@ -227,6 +227,7 @@ if ($resultado) {
 </head>
 
 <body>
+    <?php include('../Anime/menu.php'); ?>
     <?php
 
     // Consulta SQL

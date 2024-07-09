@@ -4,7 +4,6 @@ body {
 }
 
 a {
-    color: inherit !important;
     text-decoration: none !important;
     /* Otros estilos aquí si es necesario */
 }
@@ -22,6 +21,7 @@ h1 {
 .hover-text .hidden-text {
     display: none;
     background-color: #f0f0f0;
+    color: black;
 }
 
 .hover-text:hover .visible-text {
