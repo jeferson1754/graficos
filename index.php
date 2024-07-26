@@ -227,7 +227,8 @@ if ($resultado) {
 </head>
 
 <body>
-    <?php //include('../Anime/menu.php'); ?>
+    <?php //include('../Anime/menu.php'); 
+    ?>
     <?php
 
     // Consulta SQL
@@ -323,6 +324,13 @@ if ($resultado) {
 
     $sql3 = "SELECT * FROM `autor` ORDER BY `autor`.`ID` DESC limit 5;";
     $result3 = mysqli_query($conexion, $sql3);
+
+    $sql5 = "SELECT mix.ID, COUNT(op.Mix) AS MixCount FROM mix INNER JOIN op ON mix.ID = op.Mix GROUP BY mix.ID ORDER BY `mix`.`ID` DESC; ";
+    $listas_op = mysqli_query($conexion, $sql5);
+
+
+    $sql6 = "SELECT mix_ed.ID, COUNT(ed.Mix) AS MixCount FROM mix_ed INNER JOIN ed ON mix_ed.ID = ed.Mix GROUP BY mix_ed.ID ORDER BY `mix_ed`.`ID` DESC;";
+    $listas_ed = mysqli_query($conexion, $sql6);
     ?>
 
     <div class="container">
@@ -358,8 +366,8 @@ if ($resultado) {
 
     <div class="container">
 
-        <table>
-            <thead>
+        <table class="table">
+            <thead class="blue">
                 <th>Ultimos Artistas:</th>
             </thead>
             <tbody>
@@ -374,6 +382,41 @@ if ($resultado) {
         </table>
         <div id="main"></div>
     </div>
+
+    <div class="container">
+
+        <table class="min">
+            <thead class="gray">
+                <th colspan="2">Listas de OP</th>
+            </thead>
+            <tbody>
+                <?php
+                while ($mostrar = mysqli_fetch_array($listas_op)) {
+                    echo "<tr>";
+                    echo "<td>" . $mostrar['ID'] . "</td>";
+                    echo "<td>" . $mostrar['MixCount'] . "</td>";
+                    echo "</tr>";
+                }
+                ?>
+            </tbody>
+        </table>
+        <table class="min">
+            <thead class="green">
+                <th colspan="2">Listas de ED</th>
+            </thead>
+            <tbody>
+                <?php
+                while ($mostrar = mysqli_fetch_array($listas_ed)) {
+                    echo "<tr>";
+                    echo "<td>" . $mostrar['ID'] . "</td>";
+                    echo "<td>" . $mostrar['MixCount'] . "</td>";
+                    echo "</tr>";
+                }
+                ?>
+            </tbody>
+        </table>
+    </div>
+
 
     <div class="container">
         <div id="pie2"></div>

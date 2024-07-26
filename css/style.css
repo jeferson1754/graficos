@@ -69,7 +69,7 @@ img {
     max-width: 45%;
 }
 
-table {
+.table {
     width: 35%;
     background-color: white;
     text-align: center;
@@ -78,8 +78,29 @@ table {
 }
 
 
-thead {
+.min {
+    width: 20%;
+    background-color: white;
+    text-align: center;
+    border-collapse: collapse;
+    font-size: 25px;
+    margin: 0 130px 20px;
+}
+
+
+
+.blue {
     background-color: #084887;
+    color: white;
+}
+
+.gray {
+    background-color: #4A5759;
+    color: white;
+}
+
+.green {
+    background-color: #70A288;
     color: white;
 }
 
@@ -170,7 +191,7 @@ tr:hover td {
         max-width: 400px;
     }
 
-    table {
+    .table {
         width: 50%;
         margin-top: 40px;
     }
@@ -179,4 +200,8 @@ tr:hover td {
         width: 90%;
     }
 
+    .min {
+        width: 50%;
+        margin-top: 40px;
+    }
 }
