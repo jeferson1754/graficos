@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculador de Animes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/css/bootstrap.min.css">
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #6c757d;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --light: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #f5f6fa;
+            padding-top: 56px;
+        }
+
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .main-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            color: var(--dark);
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .calculator-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .counter-control {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--light);
+            padding: 0.5rem;
+            border-radius: 12px;
+        }
+
+        .btn-counter {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-minus {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-plus {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-counter:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+        #quantity {
+            width: 60px;
+            height: 48px;
+            text-align: center;
+            font-size: 1.25rem;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+
+        .inputs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 1rem;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .episode-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .episode-input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 5px solid var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 0 0.5rem;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="card">
+            <h1 class="card-title">Calculador de Episodios de Anime</h1>
+            
+            <div class="calculator-container">
+                <div class="counter-control">
+                    <button class="btn-counter btn-minus" onclick="decrement()">-</button>
+                    <input type="number" id="quantity" min="0" value="0" readonly>
+                    <button class="btn-counter btn-plus" onclick="increment()">+</button>
+                </div>
+                
+                <div id="inputs-container" class="inputs-grid">
+                    <!-- Episode inputs will be generated here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-label">Total de Episodios</div>
+                <div class="stat-value" id="total-numeros">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Tiempo Total</div>
+                <div class="stat-value" id="total-tiempo">0 horas, 0 minutos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Tiempo Restante</div>
+                <div class="stat-value" id="estimated-time">00:00</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function increment() {
+            var quantity = document.getElementById("quantity");
+            var currentValue = parseInt(quantity.value, 10);
+            quantity.value = currentValue + 1;
+            createInput(24);
+            updateTotal();
+        }
+
+        function decrement() {
+            var quantity = document.getElementById("quantity");
+            var currentValue = parseInt(quantity.value, 10);
+            if (currentValue > 0) {
+                quantity.value = currentValue - 1;
+                removeLastInput();
+                updateTotal();
+            }
+        }
+
+        function createInput(value) {
+            var container = document.getElementById("inputs-container");
+            var input = document.createElement("input");
+            input.type = "number";
+            input.min = "0";
+            input.value = value;
+            input.className = "episode-input";
+            input.addEventListener("input", validateAndUpdate);
+            container.appendChild(input);
+        }
+
+        function removeLastInput() {
+            var container = document.getElementById("inputs-container");
+            if (container.lastChild) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        function validateAndUpdate(event) {
+            var input = event.target;
+            var value = parseInt(input.value, 10);
+            if (isNaN(value) || value < 0) {
+                input.value = 0;
+            }
+            updateTotal();
+        }
+
+        function updateTotal() {
+            var inputs = document.getElementsByClassName("episode-input");
+            var totalValue = 0;
+
+            for (var input of inputs) {
+                totalValue += parseInt(input.value, 10);
+            }
+
+            var totalMinutes = totalValue;
+            var total_Total = Math.ceil(totalValue / 24);
+            var hours = Math.floor(totalMinutes / 60);
+            var minutes = totalMinutes % 60;
+
+            var remainingMinutesInDay = (24 * 60) - totalMinutes;
+            var remainingHours = Math.floor(remainingMinutesInDay / 60);
+            var remainingMinutes = remainingMinutesInDay % 60;
+
+            document.getElementById("total-numeros").innerText = total_Total;
+            document.getElementById("total-tiempo").innerText = `${hours} horas, ${minutes} minutos`;
+            document.getElementById("estimated-time").innerText = 
+                `${String(remainingHours).padStart(2, '0')}:${String(remainingMinutes).padStart(2, '0')}`;
+        }
+    </script>
+</body>
+</html>

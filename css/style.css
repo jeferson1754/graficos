@@ -55,19 +55,7 @@ img {
     height: 10px;
 }
 
-#pie,
-#main,
-#pie2 {
-    width: 600px;
-    height: 400px;
-    /* Borde opcional para visualización */
-}
 
-#areaChart {
-    /*height: 300px !important;*/
-    max-height: 300px;
-    max-width: 45%;
-}
 
 .table {
     width: 35%;
@@ -135,7 +123,7 @@ tr:hover td {
     /* Aumentar el padding para un aspecto más espaciado */
     position: absolute;
     z-index: 1;
-    bottom: 125%;
+    bottom: 25%;
     left: 50%;
     transform: translateX(-50%);
     width: 200px;
@@ -147,6 +135,7 @@ tr:hover td {
 /* Estilo para el icono */
 .tooltip-container:hover .tooltip-text {
     visibility: visible;
+    z-index: 99999;
 }
 
 /* Estilos para los cuadros de color */
@@ -168,7 +157,249 @@ tr:hover td {
     background-color: purple;
 }
 
-@media screen and (max-width: 768px) {
+
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #f5f6fa;
+    --text-color: #2c3e50;
+    --accent-color: #e74c3c;
+    --success-color: #2ecc71;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+}
+
+.header {
+    background-color: white;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header h1 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.header a {
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.header a:hover {
+    color: var(--primary-color);
+}
+
+.feedback-section {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem auto;
+    max-width: 600px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+    accent-color: var(--accent-color);
+}
+
+.main-content {
+    margin: 2rem auto;
+    padding: 0 1rem;
+    display: grid;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 2fr));
+    gap: 4rem;
+}
+
+.horizontal-cards {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.video-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    display: flex;
+    /* Flexbox para alineación */
+    justify-content: center;
+    /* Centra horizontalmente */
+    align-items: center;
+    /* Centra verticalmente */
+    height: 300px;
+    /* Asegúrate de que tenga una altura para alinear el contenido */
+}
+
+.video-container iframe {
+    width: 100%;
+    height: 100%;
+    max-width: 600px;
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.stats-table th,
+.stats-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.stats-table th {
+
+    color: white;
+}
+
+.stats-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.chart-container {
+    height: 400px;
+    width: 100%;
+}
+
+
+
+/* Contenedor para los tres elementos alineados horizontalmente */
+.horizontal-cards {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.horizontal-cards .card {
+    flex: 1;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    min-width: 30%;
+    /* Ajusta el tamaño de las tarjetas */
+}
+
+.horizontal-cards .card:last-child {
+    margin-right: 0;
+    /* Elimina el margen del último elemento */
+}
+
+.table-scroll table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-scroll thead th {
+    position: sticky;
+    top: 0;
+    /* Fondo blanco para que no se mezcle con el contenido al hacer scroll */
+    z-index: 1;
+    /* Asegura que la cabecera quede encima del contenido */
+    border: 1px solid #ccc;
+    /* Opcional: agrega borde a las celdas */
+    padding: 8px;
+}
+
+.table-scroll .table-primary thead th {
+    background-color: var(--success-color);
+    /* Define la variable de color para la primera tabla */
+}
+
+/* Estilo para la segunda tabla (con otro fondo personalizado) */
+.table-scroll .table-secondary thead th {
+    background-color: var(--primary-color)
+        /* Define otra variable de color */
+}
+
+.table-scroll .table-tertiary thead th {
+    background-color: var(--accent-color);
+    /* Define otra variable de color */
+}
+
+
+.table-scroll tbody td {
+    border: 1px solid #ccc;
+    /* Opcional: agrega borde a las celdas */
+    padding: 8px;
+}
+
+.table-scroll {
+    max-height: 300px;
+    /* Ajusta la altura máxima del contenedor */
+    overflow-y: auto;
+    /* Activa el scroll vertical */
+}
+
+
+@media (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+
+    .video-container {
+        max-width: 300px;
+        max-height: 200px;
+        height: 100%;
+        margin: 0 auto;
+    }
+
+    .header {
+        padding: 0;
+
+    }
+
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+
+    .horizontal-cards .card {
+        min-width: 100%;
+        /* Las tarjetas ocuparán el 100% del ancho en pantallas pequeñas */
+        margin-right: 0;
+        /* Elimina el margen a la derecha en pantallas pequeñas */
+    }
+
+    .visible-text,
+    .hidden-text {
+        font-size: 68%;
+    }
+
+    .tooltip-text {
+        bottom: -150%;
+    }
+
     .container {
         flex-direction: column;
         align-items: center;
@@ -178,8 +409,8 @@ tr:hover td {
     #main,
     #pie2 {
         width: 80%;
-        margin-top: 40px;
-        /* Borde opcional para visualización */
+        margin: 0 auto;
+        height:300px;
     }
 
     #main {
@@ -203,5 +434,14 @@ tr:hover td {
     .min {
         width: 50%;
         margin-top: 40px;
+    }
+
+    .card{
+        margin-bottom: 5px !important;
+    }
+
+    .main-content{
+        gap:1rem !important;
+        margin: 1rem auto !important;
     }
 }

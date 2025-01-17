@@ -224,121 +224,96 @@ if ($resultado) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"><!--Iconos-->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script><!--Graficos de Area-->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script><!--Graficos de Pie-->
+
+    <style>
+
+    </style>
 </head>
 
 <body>
     <?php //include('../Anime/menu.php'); 
     ?>
-    <?php
+    <header class="header">
+        <?php
 
-    // Consulta SQL
-    $sql = "(SELECT * FROM op WHERE Repeticion = 0 ORDER BY RAND() LIMIT 5)
+        // Consulta SQL
+        $sql = "(SELECT * FROM op WHERE Repeticion = 0 ORDER BY RAND() LIMIT 5)
     UNION ALL
     (SELECT * FROM ed WHERE Repeticion = 0 ORDER BY RAND() LIMIT 5)
     ORDER BY RAND()
     LIMIT 1;
     ";
 
-    //echo $sql;
-    // Ejecutar la consulta
-    $result = $conexion->query($sql);
+        //echo $sql;
+        // Ejecutar la consulta
+        $result = $conexion->query($sql);
 
-    // Verificar si hay resultados
-    if ($result->num_rows > 0) {
-        // Obtener los datos
-        $row = $result->fetch_assoc();
-        $idRegistros = $row['ID'];
+        // Verificar si hay resultados
+        if ($result->num_rows > 0) {
+            // Obtener los datos
+            $row = $result->fetch_assoc();
+            $idRegistros = $row['ID'];
 
-        $sql1 = "SELECT * FROM `op` WHERE ID='$row[ID]'";
-        $result1 = $conexion->query($sql1);
-        $fila = $result1->fetch_assoc();
+            // Consultas
+            $fila = $conexion->query("SELECT * FROM `op` WHERE ID='{$row['ID']}'")->fetch_assoc();
+            $columna = $conexion->query("SELECT * FROM `autor` WHERE ID='{$row['ID_Autor']}'")->fetch_assoc();
 
-        $sql2 = "SELECT * FROM `autor` WHERE ID='$row[ID_Autor]'";
-        $result2 = $conexion->query($sql2);
-        $columna = $result2->fetch_assoc();
-        //echo "" . $columna["Autor"] . "</br>";
+            // Generar contenido
+            echo "<h1 class='hover-text'>";
+            $opEd = ($fila["ID_Anime"] == $row["ID_Anime"] && $fila["Link"] == $row["Link"]) ? "OP" : "ED";
+            echo "<span class='visible-text'>{$row['Nombre']} - {$opEd} {$row['Opening']}</span>";
 
-        echo "<h1 class='hover-text'>";
+            $linkColor = $row["Link"] == NULL ? "red" : ($row["Estado_Link"] != "Correcto" ? "purple" : "inherit");
 
-        if ($fila["ID_Anime"] == $row["ID_Anime"] && $fila["Link"] == $row["Link"]) {
-            echo "<span class='visible-text'>" . $row["Nombre"] . " - OP " . $row["Opening"] . "</span>";
+            // Si no hay canción, mostrar "Sin Canción"
+            $cancion = $row["Cancion"] ? $row["Cancion"] : "Sin Canción";
+            $autorInfo = $columna["Autor"] ? " - {$columna['Autor']}" : "";
+
+            echo "<a href='{$row['Link']}' target='_blank'>
+                    <span style='color:{$linkColor}' class='hidden-text'>{$cancion}{$autorInfo}</span>
+                  </a>";
+
+            echo "</h1>";
+
+            // Actualización de base de datos y checkbox
+            $tabla = ($opEd === "OP") ? "op" : "ed";
+            $numero = ($opEd === "OP") ? "" : "2";
+            $sql4 = "UPDATE {$tabla} SET Repeticion=1 WHERE ID='$idRegistros';";
+            $conexion->query($sql4);
+
+            echo "<div class='todo'>
+                    <label class='contenedor'>
+                        <input type='checkbox' id='redireccionarCheckbox{$numero}' name='{$tabla}' unchecked>
+                        <span class='text'>¿El link está mal?</span>
+                        <div class='checkmark'></div>
+                    </label>
+                  </div>";
         } else {
-            echo "<span class='visible-text'>" . $row["Nombre"] . " - ED " . $row["Opening"] . "</span>";
+            echo "No se encontraron resultados";
         }
 
-        if ($row["Link"] == NULL) {
-            echo "<a  href=" . $row["Link"] . " target='_blanck'>";
-            if ($columna["Autor"] != "") {
-                echo "<span style='color:red' class='hidden-text'>" . $row["Cancion"] . " - " . $columna["Autor"] . "</span>";
-            } else {
-                echo "<span style='color:red' class='hidden-text'>" . $row["Cancion"] . "</span>";
-            }
-            echo "</a>";
-        } else if ($row["Estado_Link"] != "Correcto") {
-            echo "<a  href=" . $row["Link"] . " target='_blanck'>";
-            if ($columna["Autor"] != "") {
-                echo "<span style='color:purple' class='hidden-text'>" . $row["Cancion"] . " - " . $columna["Autor"] . "</span>";
-            } else {
-                echo "<span style='color:purple' class='hidden-text'>" . $row["Cancion"] . "</span>";
-            }
-            echo "</a>";
-        } else {
-            echo "<a  href=" . $row["Link"] . " target='_blanck'>";
-            if ($columna["Autor"] != "") {
-                echo "<span class='hidden-text'>" . $row["Cancion"] . " - " . $columna["Autor"] . "</span>";
-            } else {
-                echo "<span class='hidden-text'>" . $row["Cancion"] . "</span>";
-            }
-            echo "</a>";
-        }
 
-        echo "</h1>";
-        if ($fila["ID_Anime"] == $row["ID_Anime"] && $fila["Link"] == $row["Link"]) {
-            $sql4 = "UPDATE op SET Repeticion=1 WHERE ID='$idRegistros';";
-            $result4 = mysqli_query($conexion, $sql4);
-    ?>
-            <div class="todo">
-                <label class="contenedor">
-                    <input type="checkbox" id="redireccionarCheckbox" name="op" unchecked>
-                    <span class="text">El link esta mal?</span>
-                    <div class="checkmark"></div>
-                </label>
-            </div>
-        <?php
-        } else {
-            $sql4 = "UPDATE ed SET Repeticion=1 WHERE ID='$idRegistros';";
-            $result4 = mysqli_query($conexion, $sql4);
+        $sql3 = "SELECT * FROM `autor` ORDER BY `autor`.`ID` DESC limit 10;";
+        $result3 = mysqli_query($conexion, $sql3);
+
+        $sql5 = "SELECT mix.ID, COUNT(op.Mix) AS MixCount FROM mix INNER JOIN op ON mix.ID = op.Mix GROUP BY mix.ID ORDER BY `mix`.`ID` DESC; ";
+        $listas_op = mysqli_query($conexion, $sql5);
+
+
+        $sql6 = "SELECT mix_ed.ID, COUNT(ed.Mix) AS MixCount FROM mix_ed INNER JOIN ed ON mix_ed.ID = ed.Mix GROUP BY mix_ed.ID ORDER BY `mix_ed`.`ID` DESC;";
+        $listas_ed = mysqli_query($conexion, $sql6);
         ?>
-            <div class="todo">
-                <label class="contenedor">
-                    <input type="checkbox" id="redireccionarCheckbox2" name="ed" unchecked>
-                    <span class="text">El link esta mal?</span>
-                    <div class="checkmark"></div>
-                </label>
-            </div>
+    </header>
+
     <?php
-        }
-    } else {
-        echo "No se encontraron resultados";
-    }
-
-    $sql3 = "SELECT * FROM `autor` ORDER BY `autor`.`ID` DESC limit 5;";
-    $result3 = mysqli_query($conexion, $sql3);
-
-    $sql5 = "SELECT mix.ID, COUNT(op.Mix) AS MixCount FROM mix INNER JOIN op ON mix.ID = op.Mix GROUP BY mix.ID ORDER BY `mix`.`ID` DESC; ";
-    $listas_op = mysqli_query($conexion, $sql5);
-
-
-    $sql6 = "SELECT mix_ed.ID, COUNT(ed.Mix) AS MixCount FROM mix_ed INNER JOIN ed ON mix_ed.ID = ed.Mix GROUP BY mix_ed.ID ORDER BY `mix_ed`.`ID` DESC;";
-    $listas_ed = mysqli_query($conexion, $sql6);
+    if ($row["Link_Iframe"] == "") {
+        echo "";
     ?>
 
-    <div class="container">
-        <div class="content">
-            <?php
-            if ($row["Link_Iframe"] == "") {
-                echo "<img src='' alt='Sin video'>";
-            ?>
+        <div class="container">
+            <div class="content">
+                <img src='' alt='Sin video'>
+
                 <div class="tooltip-container">
                     <!-- Icono de información -->
                     <i class="fas fa-info-circle"></i>
@@ -349,77 +324,109 @@ if ($resultado) {
                         <!-- Cuadro de color azul -->
                         <div class="color-box purple"></div>: Estado Link no es Correcto
                 </div>
-            <?php
-            } else {
-                echo "<iframe src='" . $row["Link_Iframe"] . "' frameborder='0' allow='clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share' allowfullscreen></iframe>";
-            }
-            ?>
-
-
+            </div>
         </div>
+    <?php
+    } else {
+        echo "
+            <section class='card video'>
+        <div class='video-container'>
+        <iframe src='" . $row["Link_Iframe"] . "' frameborder='0' allow='clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share' allowfullscreen></iframe>
+          </div>
+    </section>";
+    }
+    ?>
+
+    <div class="horizontal-cards">
+
+        <section class="card">
+            <div id="pie" class="chart-container"></div>
+        </section>
+
+        <section class="card">
+            <div id="stacked" class="chart-container"></div>
+        </section>
+
     </div>
 
-    <div class="container">
-        <div id="pie"></div>
-        <canvas id="areaChart"></canvas>
+    <div class="horizontal-cards">
+
+        <section class="card">
+            <div class="table-scroll">
+                <table class="stats-table table-primary">
+                    <thead>
+                        <tr>
+                            <th>Listas de OP</th>
+                            <th>Conteo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        while ($mostrar = mysqli_fetch_array($listas_op)) {
+                            echo "<tr>";
+                            echo "<td>" . $mostrar['ID'] . "</td>";
+                            echo "<td>" . $mostrar['MixCount'] . "</td>";
+                            echo "</tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="table-scroll">
+                <table class="stats-table table-secondary">
+                    <thead>
+                        <th>Ultimos Artistas:</th>
+                    </thead>
+                    <tbody>
+                        <?php
+                        while ($mostrar = mysqli_fetch_array($result3)) {
+                            echo "<tr>";
+                            echo "<td>" . $mostrar['Autor'] . "</td>";
+                            echo "</tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+
+        <section class="card">
+            <div class="table-scroll">
+                <table class="stats-table table-tertiary">
+                    <thead>
+                        <th>Listas de ED</th>
+                        <th>Conteo</th>
+                    </thead>
+                    <tbody>
+                        <?php
+                        while ($mostrar = mysqli_fetch_array($listas_ed)) {
+                            echo "<tr>";
+                            echo "<td>" . $mostrar['ID'] . "</td>";
+                            echo "<td>" . $mostrar['MixCount'] . "</td>";
+                            echo "</tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+
     </div>
 
-    <div class="container">
+    <div class="horizontal-cards">
 
-        <table class="table">
-            <thead class="blue">
-                <th>Ultimos Artistas:</th>
-            </thead>
-            <tbody>
-                <?php
-                while ($mostrar = mysqli_fetch_array($result3)) {
-                    echo "<tr>";
-                    echo "<td>" . $mostrar['Autor'] . "</td>";
-                    echo "</tr>";
-                }
-                ?>
-            </tbody>
-        </table>
-        <div id="main"></div>
-    </div>
+        <section class="card">
+            <div id="main" class="chart-container"></div>
+        </section>
 
-    <div class="container">
-
-        <table class="min">
-            <thead class="gray">
-                <th colspan="2">Listas de OP</th>
-            </thead>
-            <tbody>
-                <?php
-                while ($mostrar = mysqli_fetch_array($listas_op)) {
-                    echo "<tr>";
-                    echo "<td>" . $mostrar['ID'] . "</td>";
-                    echo "<td>" . $mostrar['MixCount'] . "</td>";
-                    echo "</tr>";
-                }
-                ?>
-            </tbody>
-        </table>
-        <table class="min">
-            <thead class="green">
-                <th colspan="2">Listas de ED</th>
-            </thead>
-            <tbody>
-                <?php
-                while ($mostrar = mysqli_fetch_array($listas_ed)) {
-                    echo "<tr>";
-                    echo "<td>" . $mostrar['ID'] . "</td>";
-                    echo "<td>" . $mostrar['MixCount'] . "</td>";
-                    echo "</tr>";
-                }
-                ?>
-            </tbody>
-        </table>
-    </div>
-
-
-    <div class="container">
-        <div id="pie2"></div>
+        <section class="card">
+            <div id="pie2" class="chart-container"></div>
+        </section>
     </div>
 
 
@@ -470,52 +477,104 @@ if ($resultado) {
         $jsonOption = json_encode($option, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         ?>
 
-        var option = <?php echo $jsonOption; ?>;
+        var option = <?php echo $jsonOption;
+                        $color_rgb = "173, 223, 173";
+                        ?>;
 
         myChart.setOption(option);
 
         //Grafico de Area
-        var ctx = document.getElementById('areaChart').getContext('2d');
-        var myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [<?php
-                            foreach ($dataOp as $item) {
-                                echo "'" . $item['Semana'] . "', ";
-                            }
-                            ?>],
-                datasets: [{
-                    label: 'Cant. de Openings',
-                    data: [<?php
-                            foreach ($dataOp as $item) {
-                                echo $item['RecuentoSemana'] . ", ";
-                            }
-                            ?>],
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1,
-                    fill: true,
-                }, {
-                    label: 'Cant. de Endings',
-                    data: <?php
-                            echo "[" . implode(", ", $numValues) . "]";
-                            ?>,
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1,
-                    fill: true,
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
+        var dom = document.getElementById('stacked');
+        var myChart5 = echarts.init(dom, null, {
+            renderer: 'canvas',
+            useDirtyRect: false
         });
+        var app = {};
 
+        var option;
 
+        option = {
+            title: {
+                text: 'OP y ED por Semana',
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {
+                data: ['Cant. de Openings', 'Cant. de Endings'],
+                top: 25
+            },
+            grid: {
+                bottom: '10%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: [
+                    <?php
+                    foreach ($dataOp as $item) {
+                        echo "'" . $item['Semana'] . "', ";
+                    }
+                    ?>
+                ],
+                axisLabel: {
+                    rotate: 75, // Gira etiquetas si hay muchas semanas
+                    interval: 0 // Muestra todas las etiquetas
+                }
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: {
+                    formatter: '{value}' // Mantiene valores numéricos simples
+                }
+            },
+            series: [{
+                    name: 'Cant. de Openings',
+                    type: 'line',
+                    areaStyle: {
+                        color: 'rgba(<?php echo $color_rgb ?>, 0.4)' // Suaviza el fondo del área
+                    },
+                    lineStyle: {
+                        color: 'rgba(<?php echo $color_rgb ?>, 2)',
+                        width: 2
+                    },
+                    itemStyle: {
+                        color: 'rgba(<?php echo $color_rgb ?>, 2)' // Cambia el color del triángulo
+                    },
+                    data: [
+                        <?php
+                        foreach ($dataOp as $item) {
+                            echo $item['RecuentoSemana'] . ", ";
+                        }
+                        ?>
+                    ]
+                },
+                {
+                    name: 'Cant. de Endings',
+                    type: 'line',
+                    areaStyle: {
+                        color: 'rgba(255, 99, 132, 0.4)' // Suaviza el fondo del área
+                    },
+                    lineStyle: {
+                        color: 'rgba(255, 99, 132, 1)',
+                        width: 2
+                    },
+                    itemStyle: {
+                        color: 'rgba(255, 99, 132, 1)' // Cambia el color del triángulo
+                    },
+                    data: <?php echo "[" . implode(", ", $numValues) . "]"; ?>
+                }
 
+            ]
+        };
+
+        if (option && typeof option === 'object') {
+            myChart5.setOption(option);
+        }
+
+        window.addEventListener('resize', myChart5.resize);
 
 
         //Grafico Circular Grande
@@ -583,9 +642,18 @@ if ($resultado) {
 
         // Datos para la serie del gráfico
         $data1 = [
-            ['value' => $tablas_vacias, 'name' => 'Faltantes'],
-            ['value' => $total_tablas, 'name' => 'Total'],
+            ['value' => $sinnombre, 'name' => 'Sin Nombre', 'color' => 'rgba(255, 99, 132, 0.8)'], // Rojo
+            ['value' => $sinautor, 'name' => 'Sin Autor', 'color' => 'rgba(54, 162, 235, 0.8)'],   // Azul
+            ['value' => $sinlink, 'name' => 'Sin Link', 'color' => 'rgba(75, 192, 192, 0.8)'],    // Verde
+            ['value' => $sinifra, 'name' => 'Sin Iframe', 'color' => 'rgba(153, 102, 255, 0.8)'], // Púrpura
+            ['value' => $tablas_vacias, 'name' => 'Faltantes', 'color' => 'rgba(255, 206, 86, 0.8)'], // Amarillo
+            ['value' => $total_tablas, 'name' => 'Total', 'color' => 'rgba(255, 159, 64, 0.8)'],  // Naranja
         ];
+
+        // Ordena el array $data1 por el valor 'value' de menor a mayor
+        usort($data1, function ($a, $b) {
+            return $a['value'] <=> $b['value']; // Ordena de menor a mayor
+        });
 
         // Configuración del gráfico
         $option1 = [
@@ -595,31 +663,42 @@ if ($resultado) {
                 'top' => 0
             ],
             'tooltip' => [
-                'trigger' => 'item',
-                'formatter' => '{a} <br/>{b}: {c} ({d}%)',
+                'trigger' => 'axis',
+                'formatter' => '{a} <br/>{b}: {c}'
+            ],
+            'grid' => [
+                'bottom' => '20%',
+                // Da espacio al gráfico para la leyenda
+            ],
+            'xAxis' => [
+                'type' => 'category',
+                'data' => array_column($data1, 'name'),
+                'axisLabel' => [
+                    'rotate' => 45,
+                    'fontSize' => 12
+                ]
+            ],
+            'yAxis' => [
+                'type' => 'value'
             ],
             'series' => [
                 [
-
                     'name' => 'Cantidad de Casillas',
-                    'type' => 'pie',
-                    'radius' => '65%',
-                    'data' => $data1,
-                    'emphasis' => [
-                        'itemStyle' => [
-                            'shadowBlur' => 10,
-                            'shadowOffsetX' => 0,
-                            'shadowColor' => 'rgba(0, 0, 0, 0.5)'
-                        ]
-                    ],
-                    'label' => [
-                        'show' => true,
-                        'formatter' => '{b}: {d}%'
-                    ],
-
+                    'type' => 'bar',
+                    'data' => array_map(function ($item) {
+                        return [
+                            'value' => $item['value'],
+                            'itemStyle' => ['color' => $item['color']]
+                        ];
+                    }, $data1),
                 ]
             ]
         ];
+
+
+
+
+
 
         // Convertir a JSON
         $jsonOption1 = json_encode($option1, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
