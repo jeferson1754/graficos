@@ -73,7 +73,7 @@ if ($resultado1) {
 // Función para ejecutar consulta y construir el array de datos
 function fetchData($conexion, $tabla)
 {
-    $sql = "SELECT CONCAT(YEAR(Fecha_Ingreso), '-', WEEK(Fecha_Ingreso)+1,' Semana') AS Semana, COUNT(*) AS RecuentoSemana FROM $tabla WHERE YEARWEEK(Fecha_Ingreso) BETWEEN YEARWEEK(CURDATE() - INTERVAL 4 WEEK) AND YEARWEEK(CURDATE()) GROUP BY Semana ORDER BY Semana";
+    $sql = "SELECT CONCAT(YEAR(Fecha_Ingreso), '-', WEEK(Fecha_Ingreso)+1) AS Semana, COUNT(*) AS RecuentoSemana FROM $tabla WHERE YEARWEEK(Fecha_Ingreso) BETWEEN YEARWEEK(CURDATE() - INTERVAL 4 WEEK) AND YEARWEEK(CURDATE()) GROUP BY Semana ORDER BY Semana";
 
     // Ejecutar la consulta
     $resultado = $conexion->query($sql);
@@ -114,51 +114,68 @@ foreach ($dataEd as $item) {
     $dataEdArray[] = $item['RecuentoSemana'];
     $dataEdArray[] = $item['Semana'];
 }
-/*
-echo "DataOp: [" . implode(', ', $dataOpArray) . "]<br>";
-echo "DataEd: [" . implode(', ', $dataEdArray) . "]<br>";
-*/
 
 
+function obtenerUltimas4Semanas()
+{
+    $semanas = [];
+    $fechaActual = new DateTime();
 
+    // Obtener las últimas 4 semanas
+    for ($i = 0; $i < 4; $i++) {
+        // Obtener el año y la semana en formato '2025-02 Semana'
+        $anio = $fechaActual->format('Y');
+        $semana = sprintf('%02d', $fechaActual->format('W')); // Aseguramos que la semana tenga dos dígitos
+        $semanas[] = "'" . $anio . '-' . $semana . ' Semana' . "'"; // Añadimos las comillas simples
 
-// Crear un mapa para dataEd con clave como la fecha y valor como el número antes de la fecha
-$edMap = array();
-for ($i = 0; $i < count($dataEdArray); $i += 2) {
-    $edMap[$dataEdArray[$i + 1]] = $dataEdArray[$i];
-}
-
-// Inicializar el nuevo array para los resultados
-$newDataEd = array();
-
-// Recorrer dataOp, tomando las fechas y agregando el valor correspondiente de dataEd
-for ($i = 1; $i < count($dataOpArray); $i += 2) {
-    $semana = $dataOpArray[$i]; // Obtener la fecha (semana)
-
-    if (array_key_exists($semana, $edMap)) {
-        // Si la fecha está en el mapa de dataEd, obtener su valor
-        $correspondingValue = $edMap[$semana];
-    } else {
-        // Si no está, el valor es cero
-        $correspondingValue = 0;
+        // Retrocedemos una semana
+        $fechaActual->modify('-1 week');
     }
 
-    // Agregar el valor correspondiente y la fecha al nuevo array
-    $newDataEd[] = $correspondingValue;
-    $newDataEd[] = $semana;
+    // Invertir el arreglo para tener las semanas en orden ascendente
+    return array_reverse($semanas);
 }
 
-// Imprimir el resultado final
-//echo "DataEd: [" . implode(", ", $newDataEd) . "]\n";
+// Llamada a la función
+$ultimasSemanas = obtenerUltimas4Semanas();
 
-// Extraer solo los valores numéricos
-$numValues = array_filter($newDataEd, 'is_numeric');
+function completarValoresSemanas($data, $inicio, $fin)
+{
+    $result = [];
+    $dataAssoc = [];
 
-// Re-indexar el arreglo para que tenga índices consecutivos
-$numValues = array_values($numValues);
+    // Convertir los datos a un formato clave-valor (semana => valor)
+    for ($i = 0; $i < count($data); $i += 2) {
+        $dataAssoc[$data[$i + 1]] = $data[$i];
+    }
 
-//echo "Valores numéricos: [" . implode(", ", $numValues) . "]";
+    // Generar todas las semanas desde $inicio hasta $fin
+    for ($week = $inicio; $week <= $fin; $week++) {
+        $key = "2025-$week";
+        $result[] = isset($dataAssoc[$key]) ? $dataAssoc[$key] : 0;
+    }
 
+    return $result;
+}
+
+// Calcular la semana actual
+$currentDate = new DateTime();
+$year = $currentDate->format('Y');
+$currentWeek = (int)$currentDate->format('W'); // Número de semana actual
+
+// Determinar las últimas 4 semanas
+$inicioSemana = $currentWeek - 3; // Hace 3 semanas
+$finSemana = $currentWeek;       // Semana actual
+
+// Completar las semanas para DataOp y DataEd
+$valoresDataOp = completarValoresSemanas($dataOpArray, $inicioSemana, $finSemana);
+$valoresDataEd = completarValoresSemanas($dataEdArray, $inicioSemana, $finSemana);
+
+// Formatear la salida
+/*
+echo "DataOp: [" . implode(", ", $valoresDataOp) . "]\n";
+echo "DataEd: [" . implode(", ", $valoresDataEd) . "]\n";
+*/
 
 
 //-----------GRAFICO DE CASILLAS FALTANTES ---------------
@@ -237,13 +254,8 @@ if ($resultado) {
         <?php
 
         // Consulta SQL
-        $sql = "(SELECT * FROM op WHERE Repeticion = 0 ORDER BY RAND() LIMIT 5)
-    UNION ALL
-    (SELECT * FROM ed WHERE Repeticion = 0 ORDER BY RAND() LIMIT 5)
-    ORDER BY RAND()
-    LIMIT 1;
+        $sql = "( SELECT op.*, CONCAT(anime.Nombre, ' ', op.Temporada) AS Nombre FROM op INNER JOIN anime ON op.ID_Anime = anime.id WHERE op.Repeticion = 0 ORDER BY RAND() LIMIT 5 ) UNION ALL ( SELECT ed.*, CONCAT(anime.Nombre, ' ', ed.Temporada) AS Nombre FROM ed INNER JOIN anime ON ed.ID_Anime = anime.id WHERE ed.Repeticion = 0 ORDER BY RAND() LIMIT 5 ) ORDER BY RAND() LIMIT 1;
     ";
-
         //echo $sql;
         // Ejecutar la consulta
         $result = $conexion->query($sql);
@@ -514,9 +526,7 @@ if ($resultado) {
                 boundaryGap: false,
                 data: [
                     <?php
-                    foreach ($dataOp as $item) {
-                        echo "'" . $item['Semana'] . "', ";
-                    }
+                    echo implode(", ", $ultimasSemanas);
                     ?>
                 ],
                 axisLabel: {
@@ -545,9 +555,7 @@ if ($resultado) {
                     },
                     data: [
                         <?php
-                        foreach ($dataOp as $item) {
-                            echo $item['RecuentoSemana'] . ", ";
-                        }
+                        echo implode(", ", $valoresDataOp);
                         ?>
                     ]
                 },
@@ -564,7 +572,11 @@ if ($resultado) {
                     itemStyle: {
                         color: 'rgba(255, 99, 132, 1)' // Cambia el color del triángulo
                     },
-                    data: <?php echo "[" . implode(", ", $numValues) . "]"; ?>
+                    data: [
+                        <?php
+                        echo implode(", ", $valoresDataEd);
+                        ?>
+                    ]
                 }
 
             ]
